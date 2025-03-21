@@ -13,9 +13,6 @@ import java.util.List;
 public class LineupController {
 
     private final LineupService lineupService;
-
-    // Ya NO necesitas el CloudinaryService aquí,
-    // porque subes a Cloudinary desde el FRONT
     public LineupController(LineupService lineupService) {
         this.lineupService = lineupService;
     }
