@@ -38,7 +38,8 @@ public class LineupService {
 
     public List<Lineup> getUserLineupsPaginated(String uploadedBy, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return lineupRepository.findByUploadedBy(uploadedBy, pageable).getContent();
+        return lineupRepository.findByUploadedByOrderByUploadDateDesc(uploadedBy, pageable).getContent();
+
     }
 
     public Optional<Lineup> getLineupById(Long id) {

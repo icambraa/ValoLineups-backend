@@ -11,4 +11,7 @@ import org.springframework.data.domain.Pageable;
 public interface LineupRepository extends JpaRepository<Lineup, Long> {
 
     Page<Lineup> findByUploadedBy(String uploadedBy, Pageable pageable);
+
+    Page<Lineup> findByUploadedByOrderByUploadDateDesc(String uploadedBy, Pageable pageable);
+
 }
