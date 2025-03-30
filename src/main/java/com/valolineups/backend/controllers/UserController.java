@@ -52,7 +52,6 @@ public class UserController {
                 user = existingUserOpt.get();
             }
 
-            // Aseguramos que los campos nunca sean null
             String displayName = user.getDisplayName() != null ? user.getDisplayName() : "Sin nombre";
             String photoUrlToReturn = user.getPhotoUrl() != null ? user.getPhotoUrl() : "Sin foto";
             String nickname = user.getNickname() != null ? user.getNickname() : "Sin apodo";
