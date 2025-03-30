@@ -2,9 +2,14 @@ package com.valolineups.backend.services;
 
 import com.valolineups.backend.models.Lineup;
 import com.valolineups.backend.repositories.LineupRepository;
+
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class LineupService {
@@ -30,4 +35,14 @@ public class LineupService {
                 " desde " + lineup.getExecutedOn() +
                 " hacia " + lineup.getAffectedArea();
     }
+
+    public List<Lineup> getUserLineupsPaginated(String uploadedBy, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return lineupRepository.findByUploadedBy(uploadedBy, pageable).getContent();
+    }
+
+    public Optional<Lineup> getLineupById(Long id) {
+        return lineupRepository.findById(id);
+    }
+
 }

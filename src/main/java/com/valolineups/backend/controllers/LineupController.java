@@ -13,6 +13,7 @@ import java.util.List;
 public class LineupController {
 
     private final LineupService lineupService;
+
     public LineupController(LineupService lineupService) {
         this.lineupService = lineupService;
     }
@@ -51,8 +52,19 @@ public class LineupController {
         return ResponseEntity.ok(savedLineup);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Lineup>> getAllLineups() {
-        return ResponseEntity.ok(lineupService.getAllLineups());
+    @GetMapping("/user")
+    public ResponseEntity<List<Lineup>> getUserLineups(
+            @RequestParam String uploadedBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return ResponseEntity.ok(lineupService.getUserLineupsPaginated(uploadedBy, page, size));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Lineup> getLineupById(@PathVariable Long id) {
+        return lineupService.getLineupById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }

@@ -52,9 +52,57 @@ public class UserController {
                 user = existingUserOpt.get();
             }
 
+            // Aseguramos que los campos nunca sean null
+            String displayName = user.getDisplayName() != null ? user.getDisplayName() : "Sin nombre";
+            String photoUrlToReturn = user.getPhotoUrl() != null ? user.getPhotoUrl() : "Sin foto";
+            String nickname = user.getNickname() != null ? user.getNickname() : "Sin apodo";
+
             return ResponseEntity.ok(Map.of(
                     "message", "Usuario sincronizado",
                     "newUser", isNewUser,
+                    "user", Map.of(
+                            "firebaseUid", user.getFirebaseUid(),
+                            "email", user.getEmail(),
+                            "displayName", displayName,
+                            "photoUrl", photoUrlToReturn,
+                            "nickname", nickname,
+                            "isAdmin", user.isAdmin())));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(401).body("Token inválido");
+        }
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> updates) {
+        try {
+            String idToken = authHeader.replace("Bearer ", "");
+            FirebaseToken decodedToken = firebaseService.verifyToken(idToken);
+
+            String uid = decodedToken.getUid();
+            Optional<User> userOpt = userRepository.findById(uid);
+
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            User user = userOpt.get();
+
+            if (updates.containsKey("nickname")) {
+                user.setNickname(updates.get("nickname"));
+            }
+            if (updates.containsKey("displayName")) {
+                user.setDisplayName(updates.get("displayName"));
+            }
+            if (updates.containsKey("photoUrl")) {
+                user.setPhotoUrl(updates.get("photoUrl"));
+            }
+
+            userRepository.save(user);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Perfil actualizado",
                     "user", Map.of(
                             "firebaseUid", user.getFirebaseUid(),
                             "email", user.getEmail(),
@@ -62,9 +110,11 @@ public class UserController {
                             "photoUrl", user.getPhotoUrl(),
                             "nickname", user.getNickname(),
                             "isAdmin", user.isAdmin())));
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(401).body("Token inválido");
         }
     }
+
 }
