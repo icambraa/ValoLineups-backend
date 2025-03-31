@@ -42,14 +42,7 @@ public class LineupController {
         lineup.setSide(side);
         lineup.setUploadedBy(uploadedBy);
 
-        if (imageUrls != null && !imageUrls.isEmpty()) {
-            lineup.setImageUrl(String.join(",", imageUrls));
-        } else {
-            lineup.setImageUrl("");
-        }
-
-        Lineup savedLineup = lineupService.createLineup(lineup);
-        return ResponseEntity.ok(savedLineup);
+        return ResponseEntity.ok(lineupService.createLineupWithImages(lineup, imageUrls));
     }
 
     @GetMapping("/user")

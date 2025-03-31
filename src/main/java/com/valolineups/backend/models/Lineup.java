@@ -2,6 +2,10 @@ package com.valolineups.backend.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "lineups")
@@ -19,10 +23,13 @@ public class Lineup {
     private String affectedArea;
     private String executedOn;
     private String videoUrl;
-    private String imageUrl;
     private String uploadedBy;
     private LocalDateTime uploadDate;
     private String side;
+
+    @OneToMany(mappedBy = "lineup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<LineupImage> images = new ArrayList<>();
 
     public Lineup() {
         this.uploadDate = LocalDateTime.now();
@@ -100,14 +107,6 @@ public class Lineup {
         this.videoUrl = videoUrl;
     }
 
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
     public String getUploadedBy() {
         return uploadedBy;
     }
@@ -132,4 +131,11 @@ public class Lineup {
         this.side = side;
     }
 
+    public List<LineupImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<LineupImage> images) {
+        this.images = images;
+    }
 }
