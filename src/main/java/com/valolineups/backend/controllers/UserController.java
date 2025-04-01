@@ -43,8 +43,15 @@ public class UserController {
                 user = new User();
                 user.setFirebaseUid(uid);
                 user.setEmail(email);
-                user.setDisplayName(name);
-                user.setPhotoUrl(photoUrl);
+
+                if (name != null && !name.isBlank()) {
+                    user.setDisplayName(name);
+                }
+
+                if (photoUrl != null && !photoUrl.isBlank()) {
+                    user.setPhotoUrl(photoUrl);
+                }
+
                 userRepository.save(user);
                 isNewUser = true;
                 System.out.println("✅ Usuario nuevo sincronizado: " + uid);
@@ -52,20 +59,21 @@ public class UserController {
                 user = existingUserOpt.get();
             }
 
-            String displayName = user.getDisplayName() != null ? user.getDisplayName() : "Sin nombre";
-            String photoUrlToReturn = user.getPhotoUrl() != null ? user.getPhotoUrl() : "Sin foto";
-            String nickname = user.getNickname() != null ? user.getNickname() : "Sin apodo";
+            String displayName = user.getDisplayName() != null ? user.getDisplayName() : "";
+            String photoUrlToReturn = user.getPhotoUrl() != null ? user.getPhotoUrl() : "";
+            String nickname = user.getNickname() != null ? user.getNickname() : "";
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Usuario sincronizado",
-                    "newUser", isNewUser,
-                    "user", Map.of(
-                            "firebaseUid", user.getFirebaseUid(),
-                            "email", user.getEmail(),
-                            "displayName", displayName,
-                            "photoUrl", photoUrlToReturn,
-                            "nickname", nickname,
-                            "isAdmin", user.isAdmin())));
+            return ResponseEntity.ok(Map.ofEntries(
+                    Map.entry("message", "Usuario sincronizado"),
+                    Map.entry("newUser", isNewUser),
+                    Map.entry("user", Map.ofEntries(
+                            Map.entry("firebaseUid", user.getFirebaseUid()),
+                            Map.entry("email", user.getEmail() != null ? user.getEmail() : ""),
+                            Map.entry("displayName", displayName),
+                            Map.entry("photoUrl", photoUrlToReturn),
+                            Map.entry("nickname", nickname),
+                            Map.entry("isAdmin", user.isAdmin())))));
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(401).body("Token inválido");
@@ -100,20 +108,19 @@ public class UserController {
 
             userRepository.save(user);
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Perfil actualizado",
-                    "user", Map.of(
-                            "firebaseUid", user.getFirebaseUid(),
-                            "email", user.getEmail(),
-                            "displayName", user.getDisplayName(),
-                            "photoUrl", user.getPhotoUrl(),
-                            "nickname", user.getNickname(),
-                            "isAdmin", user.isAdmin())));
+            return ResponseEntity.ok(Map.ofEntries(
+                    Map.entry("message", "Perfil actualizado"),
+                    Map.entry("user", Map.ofEntries(
+                            Map.entry("firebaseUid", user.getFirebaseUid()),
+                            Map.entry("email", user.getEmail() != null ? user.getEmail() : ""),
+                            Map.entry("displayName", user.getDisplayName() != null ? user.getDisplayName() : ""),
+                            Map.entry("photoUrl", user.getPhotoUrl() != null ? user.getPhotoUrl() : ""),
+                            Map.entry("nickname", user.getNickname() != null ? user.getNickname() : ""),
+                            Map.entry("isAdmin", user.isAdmin())))));
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(401).body("Token inválido");
         }
     }
-
 }

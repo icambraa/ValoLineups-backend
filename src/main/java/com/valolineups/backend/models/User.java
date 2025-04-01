@@ -1,5 +1,6 @@
 package com.valolineups.backend.models;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -15,6 +16,7 @@ public class User {
 
     private String email;
     private String displayName;
+    @Column(length = 2048)
     private String photoUrl;
     private Instant createdAt = Instant.now();
 
