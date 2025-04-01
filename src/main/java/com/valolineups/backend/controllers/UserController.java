@@ -54,7 +54,7 @@ public class UserController {
 
                 userRepository.save(user);
                 isNewUser = true;
-                System.out.println("✅ Usuario nuevo sincronizado: " + uid);
+                System.out.println("Usuario nuevo sincronizado: " + uid);
             } else {
                 user = existingUserOpt.get();
             }
