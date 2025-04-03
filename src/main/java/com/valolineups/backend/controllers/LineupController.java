@@ -71,4 +71,31 @@ public class LineupController {
         return ResponseEntity.ok(lineupService.getAcceptedLineupsByUser(uploadedBy, page, size));
     }
 
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<Lineup> approveLineup(@PathVariable Long id) {
+        return lineupService.approveLineup(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<Lineup> rejectLineup(@PathVariable Long id) {
+        return lineupService.rejectLineup(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<List<Lineup>> getPendingLineups(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        return ResponseEntity.ok(lineupService.getPendingReviewLineups(page, size));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteLineup(@PathVariable Long id) {
+        lineupService.deleteLineup(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }

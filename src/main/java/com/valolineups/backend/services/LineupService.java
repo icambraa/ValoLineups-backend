@@ -97,4 +97,8 @@ public class LineupService {
         return lineupOpt;
     }
 
+    public void deleteLineup(Long id) {
+        lineupRepository.deleteById(id);
+    }
+
 }
