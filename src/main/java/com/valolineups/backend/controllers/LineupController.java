@@ -29,7 +29,8 @@ public class LineupController {
             @RequestParam("videoUrl") String videoUrl,
             @RequestParam("side") String side,
             @RequestParam("uploadedBy") String uploadedBy,
-            @RequestParam(value = "images", required = false) List<String> imageUrls) {
+            @RequestParam(value = "images", required = false) List<String> imageUrls,
+            @RequestParam(value = "wantsToBeReviewed", defaultValue = "false") boolean wantsToBeReviewed) {
 
         Lineup lineup = new Lineup();
         lineup.setDescription(description);
@@ -41,6 +42,8 @@ public class LineupController {
         lineup.setVideoUrl(videoUrl);
         lineup.setSide(side);
         lineup.setUploadedBy(uploadedBy);
+        lineup.setPendingReview(wantsToBeReviewed);
+        lineup.setIsGeneral(false);
 
         return ResponseEntity.ok(lineupService.createLineupWithImages(lineup, imageUrls));
     }
@@ -58,6 +61,14 @@ public class LineupController {
         return lineupService.getLineupById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/user/accepted")
+    public ResponseEntity<List<Lineup>> getAcceptedLineupsByUser(
+            @RequestParam String uploadedBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return ResponseEntity.ok(lineupService.getAcceptedLineupsByUser(uploadedBy, page, size));
     }
 
 }

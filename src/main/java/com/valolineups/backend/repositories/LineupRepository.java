@@ -14,4 +14,12 @@ public interface LineupRepository extends JpaRepository<Lineup, Long> {
 
     Page<Lineup> findByUploadedByOrderByUploadDateDesc(String uploadedBy, Pageable pageable);
 
+    Page<Lineup> findByIsGeneralTrueOrderByUploadDateDesc(Pageable pageable);
+
+    Page<Lineup> findByPendingReviewTrueOrderByUploadDateDesc(Pageable pageable);
+
+    Page<Lineup> findByUploadedByAndIsGeneralTrueOrderByUploadDateDesc(String uploadedBy, Pageable pageable);
+
+
+
 }

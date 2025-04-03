@@ -46,10 +46,6 @@ public class LineupService {
         return savedLineup;
     }
 
-    public List<Lineup> getAllLineups() {
-        return lineupRepository.findAll();
-    }
-
     private String generateTitle(Lineup lineup) {
         return lineup.getAgent() + " usando " + lineup.getAbilities() +
                 " desde " + lineup.getExecutedOn() +
@@ -64,4 +60,41 @@ public class LineupService {
     public Optional<Lineup> getLineupById(Long id) {
         return lineupRepository.findById(id);
     }
+
+    public List<Lineup> getGeneralLineupsPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return lineupRepository.findByIsGeneralTrueOrderByUploadDateDesc(pageable).getContent();
+    }
+
+    public List<Lineup> getPendingReviewLineups(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return lineupRepository.findByPendingReviewTrueOrderByUploadDateDesc(pageable).getContent();
+    }
+
+    public List<Lineup> getAcceptedLineupsByUser(String uploadedBy, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return lineupRepository.findByUploadedByAndIsGeneralTrueOrderByUploadDateDesc(uploadedBy, pageable)
+                .getContent();
+    }
+
+    public Optional<Lineup> approveLineup(Long id) {
+        Optional<Lineup> lineupOpt = lineupRepository.findById(id);
+        lineupOpt.ifPresent(lineup -> {
+            lineup.setIsGeneral(true);
+            lineup.setPendingReview(false);
+            lineupRepository.save(lineup);
+        });
+        return lineupOpt;
+    }
+
+    public Optional<Lineup> rejectLineup(Long id) {
+        Optional<Lineup> lineupOpt = lineupRepository.findById(id);
+        lineupOpt.ifPresent(lineup -> {
+            lineup.setIsGeneral(false);
+            lineup.setPendingReview(false);
+            lineupRepository.save(lineup);
+        });
+        return lineupOpt;
+    }
+
 }

@@ -27,6 +27,12 @@ public class Lineup {
     private LocalDateTime uploadDate;
     private String side;
 
+    @Column(name = "is_general")
+    private boolean isGeneral = false;
+
+    @Column(name = "pending_review")
+    private boolean pendingReview = false;
+
     @OneToMany(mappedBy = "lineup", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<LineupImage> images = new ArrayList<>();
@@ -129,6 +135,22 @@ public class Lineup {
 
     public void setSide(String side) {
         this.side = side;
+    }
+
+    public boolean isGeneral() {
+        return isGeneral;
+    }
+
+    public void setIsGeneral(boolean isGeneral) {
+        this.isGeneral = isGeneral;
+    }
+
+    public boolean isPendingReview() {
+        return pendingReview;
+    }
+
+    public void setPendingReview(boolean pendingReview) {
+        this.pendingReview = pendingReview;
     }
 
     public List<LineupImage> getImages() {
