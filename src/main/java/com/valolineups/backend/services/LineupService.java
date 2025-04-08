@@ -101,4 +101,11 @@ public class LineupService {
         lineupRepository.deleteById(id);
     }
 
+    public List<Lineup> getAllAcceptedLineups(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return lineupRepository
+                .findByIsGeneralTrueOrderByUploadDateDesc(pageable)
+                .getContent();
+    }
+
 }

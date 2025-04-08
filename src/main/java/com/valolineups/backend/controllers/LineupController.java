@@ -71,6 +71,13 @@ public class LineupController {
         return ResponseEntity.ok(lineupService.getAcceptedLineupsByUser(uploadedBy, page, size));
     }
 
+    @GetMapping("/accepted")
+    public ResponseEntity<List<Lineup>> getAllAcceptedLineups(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return ResponseEntity.ok(lineupService.getAllAcceptedLineups(page, size));
+    }
+
     @PutMapping("/{id}/approve")
     public ResponseEntity<Lineup> approveLineup(@PathVariable Long id) {
         return lineupService.approveLineup(id)
