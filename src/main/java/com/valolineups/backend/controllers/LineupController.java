@@ -2,6 +2,11 @@ package com.valolineups.backend.controllers;
 
 import com.valolineups.backend.models.Lineup;
 import com.valolineups.backend.services.LineupService;
+
+import com.valolineups.backend.models.SearchFilterResult;
+import com.valolineups.backend.models.SearchRequest;
+import com.valolineups.backend.services.OpenAiService;
+import com.valolineups.backend.utils.QueryNormalizer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +18,13 @@ import java.util.List;
 public class LineupController {
 
     private final LineupService lineupService;
+    private final OpenAiService openAiService;
+    private final QueryNormalizer normalizer;
 
-    public LineupController(LineupService lineupService) {
+    public LineupController(LineupService lineupService, OpenAiService openAiService, QueryNormalizer normalizer) {
         this.lineupService = lineupService;
+        this.openAiService = openAiService;
+        this.normalizer = normalizer;
     }
 
     @PostMapping("/create")
@@ -103,6 +112,29 @@ public class LineupController {
     public ResponseEntity<Void> deleteLineup(@PathVariable Long id) {
         lineupService.deleteLineup(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/search-natural")
+    public ResponseEntity<List<Lineup>> searchNatural(@RequestBody SearchRequest request) {
+
+        String cleanedQuery = normalizer.normalize(request.getQuery());
+        System.out.println("🧹 Query normalizada: " + cleanedQuery);
+        SearchFilterResult filters = openAiService.extractFilters(cleanedQuery);
+
+        if (filters == null) {
+            return ResponseEntity.status(500).build();
+        }
+
+        System.out.println("MAP: " + filters.map);
+        System.out.println("AGENT: " + filters.agent);
+        System.out.println("SIDE: " + filters.side);
+        System.out.println("FROM: " + filters.executedOn);
+        System.out.println("TO: " + filters.affectedArea);
+
+        List<Lineup> results = lineupService.findByFilters(
+                filters.map, filters.agent, filters.side, filters.executedOn, filters.affectedArea);
+
+        return ResponseEntity.ok(results);
     }
 
 }

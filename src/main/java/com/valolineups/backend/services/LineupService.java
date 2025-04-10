@@ -108,4 +108,14 @@ public class LineupService {
                 .getContent();
     }
 
+    public List<Lineup> findByFilters(String map, String agent, String side, String from, String to) {
+        return lineupRepository.findAll().stream()
+                .filter(l -> map == null || l.getMap().equalsIgnoreCase(map))
+                .filter(l -> agent == null || l.getAgent().equalsIgnoreCase(agent))
+                .filter(l -> side == null || l.getSide().equalsIgnoreCase(side))
+                .filter(l -> from == null || l.getExecutedOn().toLowerCase().contains(from.toLowerCase()))
+                .filter(l -> to == null || l.getAffectedArea().toLowerCase().contains(to.toLowerCase()))
+                .collect(Collectors.toList());
+    }
+
 }
