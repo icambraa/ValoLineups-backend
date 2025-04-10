@@ -33,6 +33,9 @@ public class Lineup {
     @Column(name = "pending_review")
     private boolean pendingReview = false;
 
+    @Column(name = "embedding", columnDefinition = "TEXT")
+    private String embedding;
+
     @OneToMany(mappedBy = "lineup", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<LineupImage> images = new ArrayList<>();
@@ -159,5 +162,13 @@ public class Lineup {
 
     public void setImages(List<LineupImage> images) {
         this.images = images;
+    }
+
+    public String getEmbedding() {
+        return embedding;
+    }
+
+    public void setEmbedding(String embedding) {
+        this.embedding = embedding;
     }
 }

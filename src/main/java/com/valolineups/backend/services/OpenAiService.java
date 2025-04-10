@@ -3,6 +3,10 @@ package com.valolineups.backend.services;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.*;
 import com.valolineups.backend.models.SearchFilterResult;
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -34,7 +38,7 @@ public class OpenAiService {
 
                     "%s"
 
-                    Devuelve un JSON con los campos anteriores. Si se menciona algo como "A Site hacia B Main", separa "A Site" como `executedOn` y "B Main" como `affectedArea`.
+                    Devuelve un JSON con los campos anteriores. Si se menciona algo como "A Site hacia B Main" (por ejemplo), separa "A Site" como `executedOn` y "B Main" como `affectedArea`.
 
                     El formato del JSON que debe devolver es:
                     {
@@ -73,4 +77,62 @@ public class OpenAiService {
             return null;
         }
     }
+
+    public List<Double> generateEmbedding(String input) {
+        String embeddingEndpoint = "https://api.openai.com/v1/embeddings";
+
+        ObjectNode body = mapper.createObjectNode();
+        body.put("model", "text-embedding-ada-002");
+        body.put("input", input);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(embeddingEndpoint, request, String.class);
+            JsonNode json = mapper.readTree(response.getBody());
+
+            JsonNode vectorNode = json.at("/data/0/embedding");
+            List<Double> embedding = mapper.convertValue(
+                    vectorNode,
+                    new com.fasterxml.jackson.core.type.TypeReference<List<Double>>() {
+                    });
+            return embedding;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<Double> getEmbedding(String input) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ObjectNode body = mapper.createObjectNode();
+        body.put("model", "text-embedding-ada-002");
+        body.put("input", input);
+
+        HttpEntity<String> request = new HttpEntity<>(body.toString(), headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    "https://api.openai.com/v1/embeddings",
+                    request,
+                    String.class);
+
+            JsonNode json = mapper.readTree(response.getBody());
+            JsonNode embedding = json.at("/data/0/embedding");
+
+            return mapper.convertValue(embedding, new TypeReference<List<Double>>() {
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

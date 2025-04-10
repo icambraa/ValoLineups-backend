@@ -1,5 +1,6 @@
 package com.valolineups.backend.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.valolineups.backend.models.Lineup;
 import com.valolineups.backend.models.LineupImage;
 import com.valolineups.backend.repositories.LineupRepository;
@@ -18,15 +19,41 @@ public class LineupService {
 
     private final LineupRepository lineupRepository;
     private final LineupImageRepository lineupImageRepository;
+    private final OpenAiService openAiService;
 
-    public LineupService(LineupRepository lineupRepository, LineupImageRepository lineupImageRepository) {
+    public LineupService(
+            LineupRepository lineupRepository,
+            LineupImageRepository lineupImageRepository,
+            OpenAiService openAiService) {
         this.lineupRepository = lineupRepository;
         this.lineupImageRepository = lineupImageRepository;
+        this.openAiService = openAiService;
     }
 
     public Lineup createLineupWithImages(Lineup lineup, List<String> imageUrls) {
         String generatedTitle = generateTitle(lineup);
         lineup.setTitle(generatedTitle);
+
+        // 🧠 Generar texto completo para el embedding
+        String text = String.join(" ",
+                lineup.getTitle(),
+                lineup.getDescription(),
+                lineup.getMap(),
+                lineup.getAgent(),
+                lineup.getAbilities(),
+                lineup.getExecutedOn(),
+                lineup.getAffectedArea(),
+                lineup.getSide());
+
+        List<Double> embeddingVector = openAiService.getEmbedding(text);
+        if (embeddingVector != null) {
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                lineup.setEmbedding(mapper.writeValueAsString(embeddingVector));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         Lineup savedLineup = lineupRepository.save(lineup);
 
@@ -39,7 +66,6 @@ public class LineupService {
             }).collect(Collectors.toList());
 
             lineupImageRepository.saveAll(images);
-
             savedLineup.setImages(images);
         }
 
@@ -116,6 +142,12 @@ public class LineupService {
                 .filter(l -> from == null || l.getExecutedOn().toLowerCase().contains(from.toLowerCase()))
                 .filter(l -> to == null || l.getAffectedArea().toLowerCase().contains(to.toLowerCase()))
                 .collect(Collectors.toList());
+    }
+
+    public List<Lineup> getAllLineupsByUserNoPagination(String uploadedBy) {
+        return lineupRepository
+                .findByUploadedByOrderByUploadDateDesc(uploadedBy, PageRequest.of(0, 9999))
+                .getContent();
     }
 
 }
