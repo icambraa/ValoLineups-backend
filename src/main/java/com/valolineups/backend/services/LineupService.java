@@ -1,6 +1,5 @@
 package com.valolineups.backend.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.valolineups.backend.models.Lineup;
 import com.valolineups.backend.models.LineupImage;
 import com.valolineups.backend.repositories.LineupRepository;
@@ -14,46 +13,28 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.valolineups.backend.models.User;
+import com.valolineups.backend.repositories.UserRepository;
+
 @Service
 public class LineupService {
 
     private final LineupRepository lineupRepository;
     private final LineupImageRepository lineupImageRepository;
-    private final OpenAiService openAiService;
+    private final UserRepository userRepository;
 
     public LineupService(
             LineupRepository lineupRepository,
             LineupImageRepository lineupImageRepository,
-            OpenAiService openAiService) {
+            UserRepository userRepository) {
         this.lineupRepository = lineupRepository;
         this.lineupImageRepository = lineupImageRepository;
-        this.openAiService = openAiService;
+        this.userRepository = userRepository;
     }
 
     public Lineup createLineupWithImages(Lineup lineup, List<String> imageUrls) {
         String generatedTitle = generateTitle(lineup);
         lineup.setTitle(generatedTitle);
-
-        // 🧠 Generar texto completo para el embedding
-        String text = String.join(" ",
-                lineup.getTitle(),
-                lineup.getDescription(),
-                lineup.getMap(),
-                lineup.getAgent(),
-                lineup.getAbilities(),
-                lineup.getExecutedOn(),
-                lineup.getAffectedArea(),
-                lineup.getSide());
-
-        List<Double> embeddingVector = openAiService.getEmbedding(text);
-        if (embeddingVector != null) {
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                lineup.setEmbedding(mapper.writeValueAsString(embeddingVector));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
 
         Lineup savedLineup = lineupRepository.save(lineup);
 
@@ -78,9 +59,12 @@ public class LineupService {
                 " hacia " + lineup.getAffectedArea();
     }
 
-    public List<Lineup> getUserLineupsPaginated(String uploadedBy, int page, int size) {
+    public List<Lineup> getUserLineupsPaginated(String firebaseUid, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return lineupRepository.findByUploadedByOrderByUploadDateDesc(uploadedBy, pageable).getContent();
+        User user = userRepository.findById(firebaseUid)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return lineupRepository.findByUploadedByOrderByUploadDateDesc(user, pageable).getContent();
     }
 
     public Optional<Lineup> getLineupById(Long id) {
@@ -97,10 +81,12 @@ public class LineupService {
         return lineupRepository.findByPendingReviewTrueOrderByUploadDateDesc(pageable).getContent();
     }
 
-    public List<Lineup> getAcceptedLineupsByUser(String uploadedBy, int page, int size) {
+    public List<Lineup> getAcceptedLineupsByUser(String firebaseUid, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return lineupRepository.findByUploadedByAndIsGeneralTrueOrderByUploadDateDesc(uploadedBy, pageable)
-                .getContent();
+        User user = userRepository.findById(firebaseUid)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return lineupRepository.findByUploadedByAndIsGeneralTrueOrderByUploadDateDesc(user, pageable).getContent();
     }
 
     public Optional<Lineup> approveLineup(Long id) {
@@ -144,10 +130,12 @@ public class LineupService {
                 .collect(Collectors.toList());
     }
 
-    public List<Lineup> getAllLineupsByUserNoPagination(String uploadedBy) {
+    public List<Lineup> getAllLineupsByUserNoPagination(String firebaseUid) {
+        User user = userRepository.findById(firebaseUid)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         return lineupRepository
-                .findByUploadedByOrderByUploadDateDesc(uploadedBy, PageRequest.of(0, 9999))
+                .findByUploadedByOrderByUploadDateDesc(user, PageRequest.of(0, 9999))
                 .getContent();
     }
-
 }

@@ -27,7 +27,15 @@ public class UserController {
     @PostMapping("/sync")
     public ResponseEntity<?> syncUser(@RequestHeader("Authorization") String authHeader) {
         try {
-            String idToken = authHeader.replace("Bearer ", "");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body("Token de autorización faltante o malformado");
+            }
+
+            String idToken = authHeader.replace("Bearer ", "").trim();
+            if (idToken.isEmpty()) {
+                return ResponseEntity.status(401).body("Token vacío");
+            }
+
             FirebaseToken decodedToken = firebaseService.verifyToken(idToken);
 
             String uid = decodedToken.getUid();
@@ -84,7 +92,15 @@ public class UserController {
     public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String authHeader,
             @RequestBody Map<String, String> updates) {
         try {
-            String idToken = authHeader.replace("Bearer ", "");
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body("Token de autorización faltante o malformado");
+            }
+
+            String idToken = authHeader.replace("Bearer ", "").trim();
+            if (idToken.isEmpty()) {
+                return ResponseEntity.status(401).body("Token vacío");
+            }
+
             FirebaseToken decodedToken = firebaseService.verifyToken(idToken);
 
             String uid = decodedToken.getUid();

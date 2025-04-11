@@ -23,7 +23,11 @@ public class Lineup {
     private String affectedArea;
     private String executedOn;
     private String videoUrl;
-    private String uploadedBy;
+
+    @ManyToOne
+    @JoinColumn(name = "uploaded_by")
+    private User uploadedBy;
+
     private LocalDateTime uploadDate;
     private String side;
 
@@ -32,9 +36,6 @@ public class Lineup {
 
     @Column(name = "pending_review")
     private boolean pendingReview = false;
-
-    @Column(name = "embedding", columnDefinition = "TEXT")
-    private String embedding;
 
     @OneToMany(mappedBy = "lineup", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -116,11 +117,11 @@ public class Lineup {
         this.videoUrl = videoUrl;
     }
 
-    public String getUploadedBy() {
+    public User getUploadedBy() {
         return uploadedBy;
     }
 
-    public void setUploadedBy(String uploadedBy) {
+    public void setUploadedBy(User uploadedBy) {
         this.uploadedBy = uploadedBy;
     }
 
@@ -162,13 +163,5 @@ public class Lineup {
 
     public void setImages(List<LineupImage> images) {
         this.images = images;
-    }
-
-    public String getEmbedding() {
-        return embedding;
-    }
-
-    public void setEmbedding(String embedding) {
-        this.embedding = embedding;
     }
 }
