@@ -41,6 +41,20 @@ public class Lineup {
     @JsonManagedReference
     private List<LineupImage> images = new ArrayList<>();
 
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "x", column = @Column(name = "executed_on_x")),
+            @AttributeOverride(name = "y", column = @Column(name = "executed_on_y"))
+    })
+    private Coordinate executedOnCoords;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "x", column = @Column(name = "affected_area_x")),
+            @AttributeOverride(name = "y", column = @Column(name = "affected_area_y"))
+    })
+    private Coordinate affectedAreaCoords;
+
     public Lineup() {
         this.uploadDate = LocalDateTime.now();
     }
@@ -163,5 +177,21 @@ public class Lineup {
 
     public void setImages(List<LineupImage> images) {
         this.images = images;
+    }
+
+    public Coordinate getExecutedOnCoords() {
+        return executedOnCoords;
+    }
+
+    public void setExecutedOnCoords(Coordinate executedOnCoords) {
+        this.executedOnCoords = executedOnCoords;
+    }
+
+    public Coordinate getAffectedAreaCoords() {
+        return affectedAreaCoords;
+    }
+
+    public void setAffectedAreaCoords(Coordinate affectedAreaCoords) {
+        this.affectedAreaCoords = affectedAreaCoords;
     }
 }

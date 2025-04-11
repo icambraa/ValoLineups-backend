@@ -1,13 +1,12 @@
 package com.valolineups.backend.controllers;
 
-import com.valolineups.backend.dto.LineupDTO;
+import com.valolineups.backend.models.Coordinate;
 import com.valolineups.backend.models.Lineup;
 import com.valolineups.backend.repositories.UserRepository;
 import com.valolineups.backend.services.LineupService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.valolineups.backend.models.User;
-
 
 import java.util.List;
 
@@ -36,7 +35,11 @@ public class LineupController {
             @RequestParam("side") String side,
             @RequestParam("uploadedBy") String firebaseUid,
             @RequestParam(value = "images", required = false) List<String> imageUrls,
-            @RequestParam(value = "wantsToBeReviewed", defaultValue = "false") boolean wantsToBeReviewed) {
+            @RequestParam(value = "wantsToBeReviewed", defaultValue = "false") boolean wantsToBeReviewed,
+            @RequestParam("executedOnX") int executedOnX,
+            @RequestParam("executedOnY") int executedOnY,
+            @RequestParam("affectedAreaX") int affectedAreaX,
+            @RequestParam("affectedAreaY") int affectedAreaY) {
 
         Lineup lineup = new Lineup();
         lineup.setDescription(description);
@@ -45,6 +48,8 @@ public class LineupController {
         lineup.setAbilities(abilities);
         lineup.setAffectedArea(affectedArea);
         lineup.setExecutedOn(executedOn);
+        lineup.setExecutedOnCoords(new Coordinate(executedOnX, executedOnY));
+        lineup.setAffectedAreaCoords(new Coordinate(affectedAreaX, affectedAreaY));
         lineup.setVideoUrl(videoUrl);
         lineup.setSide(side);
         User user = userRepository.findById(firebaseUid)
@@ -80,13 +85,12 @@ public class LineupController {
     }
 
     @GetMapping("/accepted")
-    public ResponseEntity<List<LineupDTO>> getAllAcceptedLineups(
+    public ResponseEntity<List<Lineup>> getAllAcceptedLineups(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size) {
 
         List<Lineup> lineups = lineupService.getAllAcceptedLineups(page, size);
-        List<LineupDTO> dtos = lineups.stream().map(LineupDTO::from).toList();
-        return ResponseEntity.ok(dtos);
+        return ResponseEntity.ok(lineups);
     }
 
     @PutMapping("/{id}/approve")
